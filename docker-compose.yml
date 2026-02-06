@@ -1,0 +1,45 @@
+version: "3.8"
+
+services:
+  mongo:
+    image: mongo:6
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - backend
+
+  seed:
+    build: .
+    command: ["node", "seeds/seed.js"]
+    environment:
+      DB_HOST: mongodb://mongo:27017/posts
+    depends_on:
+      - mongo
+    networks:
+      - backend
+    restart: "no"
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      DB_HOST: mongodb://mongo:27017/posts
+    depends_on:
+      - seed
+    networks:
+      - frontend
+      - backend
+
+volumes:
+  mongo-data:
+
+networks:
+  frontend:
+    driver: bridge
+
+  backend:
+    driver: bridge
+    internal: true
