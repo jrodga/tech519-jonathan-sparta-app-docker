@@ -1,0 +1,39 @@
+name: CI - Build & Push Sparta App Image
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Log in to Docker Hub
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # 3. Build Docker image for Sparta app
+      - name: Build Docker image
+        run: |
+          docker build -t jrodga1604/sparta-app:latest .
+
+      # 4. (Optional sanity check) Run container briefly
+      - name: Run container (sanity check)
+        run: |
+          docker run -d -p 3000:3000 jrodga1604/sparta-app:latest
+          sleep 5
+          docker ps
+
+      # 5. Push image to Docker Hub
+      - name: Push image to Docker Hub
+        run: |
+          docker push jrodga1604/sparta-app:latest
